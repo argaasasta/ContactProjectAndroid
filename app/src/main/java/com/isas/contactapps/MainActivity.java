@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @InjectView(R.id.list_view_contacts)
     ListView listViewContacts;
     private ListContactsAdapter listContactsAdapter;
+
+    ContactPerson[] contactPersonAll;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +85,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         Intent intent = new Intent(getApplicationContext(),DetailContactActivity.class);
+        ContactPerson c = contactPersonAll[position];
+        intent.putExtra("NAME",c.getFirst_name()+" "+c.getLast_name());
+        intent.putExtra("EMAIL",c.getUrl());
+        intent.putExtra("PHONE",c.getFirst_name()+" "+c.getLast_name());
+        intent.putExtra("PICTURE",c.getFirst_name()+" "+c.getLast_name());
         startActivity(intent);
     }
 
@@ -109,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                     @Override
                     public void onNext(ContactPerson[] contactPerson) {
+                        contactPersonAll = contactPerson;
                         listContactsAdapter = new ListContactsAdapter(getApplicationContext(),contactPerson);
                         listViewContacts.setAdapter(listContactsAdapter);
                         System.out.println("JUMLAH "+contactPerson.length);

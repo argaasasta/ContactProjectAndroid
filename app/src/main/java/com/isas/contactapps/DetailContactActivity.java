@@ -42,7 +42,6 @@ public class DetailContactActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         ButterKnife.inject(this);
-
         Glide.with(getApplicationContext())
                 .load("lala").asBitmap().centerCrop()
                 .placeholder(R.drawable.placeholder_people)

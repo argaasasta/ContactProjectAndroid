@@ -4,6 +4,8 @@ package com.isas.contactapps.model;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 
+import java.io.File;
+
 /**
  * Created by EB-NB21 on 2/14/2017.
  */
@@ -13,6 +15,7 @@ public class ContactPerson extends BaseObservable{
     private String first_name;
     private String last_name;
     private String profile_pic;
+    private File profile_pic_file;
     private String url;
 
     public ContactPerson() {
@@ -57,6 +60,16 @@ public class ContactPerson extends BaseObservable{
     public void setProfile_pic(String profile_pic) {
         this.profile_pic = profile_pic;
     }
+
+    @Bindable
+    public File getProfile_pic_file() {
+        return profile_pic_file;
+    }
+
+    public void setProfile_pic_file(File profile_pic_file) {
+        this.profile_pic_file = profile_pic_file;
+    }
+
     @Bindable
     public String getUrl() {
         return url;
