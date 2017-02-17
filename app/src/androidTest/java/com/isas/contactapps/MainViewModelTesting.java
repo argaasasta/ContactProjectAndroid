@@ -5,6 +5,7 @@ package com.isas.contactapps;
  */
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.isas.contactapps.api.ApiInteractorImpl;
@@ -13,11 +14,15 @@ import com.isas.contactapps.viewmodel.MainViewModel;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import rx.android.schedulers.AndroidSchedulers;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.junit.Assert.*;
 
 /**
@@ -29,6 +34,9 @@ import static org.junit.Assert.*;
 public class MainViewModelTesting {
 
     MainViewModel mainViewModel;
+    @Rule
+    public ActivityTestRule<MainActivity> activityRule = new ActivityTestRule<>(MainActivity.class);
+
     @Before
     public void setUp(){
         mainViewModel =  new MainViewModel(InstrumentationRegistry.getTargetContext(),new ApiInteractorImpl(), AndroidSchedulers.mainThread());
@@ -43,5 +51,12 @@ public class MainViewModelTesting {
     public void testSaveData() {
         ContactPerson[] cpList= {new ContactPerson("222","aaa","bbb","http://","url")};
         mainViewModel.saveDataToDatabase(cpList);
+    }
+
+
+    @Test
+    public void testUIResult() {
+
+        onView(withId(R.id.action_refresh)).perform(click());
     }
 }
