@@ -1,0 +1,2 @@
+Create a class util extended BaseRegisterTable class for adding created contract classes. This class
+is used for method getInstance DatabaseHelper class as parameter.

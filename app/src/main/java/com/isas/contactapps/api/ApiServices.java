@@ -2,6 +2,8 @@ package com.isas.contactapps.api;
 
 import com.isas.contactapps.model.ContactPerson;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.HashMap;
 
@@ -12,6 +14,7 @@ import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import rx.Observable;
 
 /**
@@ -22,15 +25,11 @@ public interface ApiServices {
     @GET("contacts.json")
     Observable<ContactPerson[]> getListContact();
 
-    @POST("/contacts")
-    @FormUrlEncoded
-    Observable<String> savePost(@Field("contact[first_name]") String fName,
-                                       @Field("contact[last_name]") String lName,
-                                       @Field("contact[email]") String email,
-                                       @Field("contact[phone_number]") String phone);
+    @GET("contacts/{id}.json")
+    Observable<ContactPerson> getContact(@Path("id") String id);
 
     @FormUrlEncoded
-    @POST("/contacts")
-    Call<ResponseBody> postContact(@FieldMap HashMap<String, Object> params);
+    @POST("/contacts.json")
+    Observable<ContactPerson> postContact(@FieldMap HashMap<String, Object> params);
 
 }

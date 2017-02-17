@@ -13,8 +13,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.isas.contactapps.adapter.ListContactsAdapter;
+import com.isas.contactapps.api.ApiInteractorImpl;
 import com.isas.contactapps.api.ApiServices;
 import com.isas.contactapps.model.ContactPerson;
+import com.isas.contactapps.model.ContactPersonService;
+import com.isas.contactapps.viewmodel.DetailContactViewModel;
+import com.isas.contactapps.viewmodel.MainViewModel;
+
+import java.util.ArrayList;
+
+import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -22,6 +30,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
+import rx.Observer;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -30,9 +39,15 @@ import rx.subscriptions.CompositeSubscription;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     @InjectView(R.id.list_view_contacts)
     ListView listViewContacts;
-    private ListContactsAdapter listContactsAdapter;
 
-    ContactPerson[] contactPersonAll;
+//    @Inject
+//    ContactPersonService contactPersonService;
+
+    private ListContactsAdapter listContactsAdapter;
+    private CompositeSubscription subscription = new CompositeSubscription();
+    private MainViewModel mainViewModel;
+
+    ArrayList<ContactPerson> contactPersonAll;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         listViewContacts.setOnItemClickListener(this);
 
+        contactPersonAll=new ArrayList<>();
+        mainViewModel = new MainViewModel(getApplicationContext(),new ApiInteractorImpl(),AndroidSchedulers.mainThread());
         getData();
 
     }
@@ -75,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_refresh) {
+            getData();
             return true;
         }
 
@@ -85,43 +103,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         Intent intent = new Intent(getApplicationContext(),DetailContactActivity.class);
-        ContactPerson c = contactPersonAll[position];
-        intent.putExtra("NAME",c.getFirst_name()+" "+c.getLast_name());
-        intent.putExtra("EMAIL",c.getUrl());
-        intent.putExtra("PHONE",c.getFirst_name()+" "+c.getLast_name());
-        intent.putExtra("PICTURE",c.getFirst_name()+" "+c.getLast_name());
+        ContactPerson c = contactPersonAll.get(position);
+        intent.putExtra("ID",c.getId());
         startActivity(intent);
     }
 
     public void getData(){
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://gojek-contacts-app.herokuapp.com/")
-                .addConverterFactory(GsonConverterFactory.create())//GsonConverter untuk parsing json
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        ApiServices service = retrofit.create(ApiServices.class);
-        Observable<ContactPerson[]> call = service.getListContact();
-        call.subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ContactPerson[]>() {
-                    @Override
-                    public final void onCompleted() {
-                        // do nothing
+        subscription.add(mainViewModel.getListContact()
+                .subscribe(new Observer<ContactPerson[]>() {
+                    @Override public void onCompleted() {
+
+                    }
+
+                    @Override public void onError(Throwable e) {
+                        e.printStackTrace();
                     }
 
                     @Override
-                    public final void onError(Throwable e) {
-                        Log.e("GithubDemo", e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ContactPerson[] contactPerson) {
-                        contactPersonAll = contactPerson;
-                        listContactsAdapter = new ListContactsAdapter(getApplicationContext(),contactPerson);
+                    public void onNext(ContactPerson contactPerson[]) {
+                        mainViewModel.saveDataToDatabase(contactPerson);
+                        contactPersonAll = mainViewModel.getListContactFromDB();
+                        listContactsAdapter = new ListContactsAdapter(getApplicationContext(),contactPersonAll);
                         listViewContacts.setAdapter(listContactsAdapter);
                         System.out.println("JUMLAH "+contactPerson.length);
                     }
-                });
+
+                }));
     }
 
 //    - Use MVP and Unit Testing

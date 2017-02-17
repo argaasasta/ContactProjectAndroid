@@ -6,4 +6,7 @@
     <string name="choose_from_gallery">Choose from gallery</string>
     <string name="add_photo">Add Photo</string>
     <string name="cancel">Cancel</string>
+
+    <string name="database_name">contact_management_database</string>
+    <integer name="database_version">1</integer>
 </resources>

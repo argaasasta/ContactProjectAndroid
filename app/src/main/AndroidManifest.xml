@@ -2,10 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.isas.contactapps">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,10 +25,10 @@
         </activity>
         <activity
             android:name=".AddContactActivity"
-            android:label="Add Contact"></activity>
+            android:label="Add Contact" />
         <activity
             android:name=".DetailContactActivity"
-            android:label="Detail"></activity>
+            android:label="Detail" />
     </application>
 
 </manifest>

@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -19,9 +20,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.isas.contactapps.api.ApiServices;
+import com.isas.contactapps.api.ApiInteractorImpl;
+import com.isas.contactapps.model.ContactPerson;
+import com.isas.contactapps.viewmodel.AddContactViewModel;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,12 +37,10 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class AddContactActivity extends AppCompatActivity {
 
@@ -59,6 +61,9 @@ public class AddContactActivity extends AppCompatActivity {
     public Uri mImageCaptureUri;
     private File sendPhoto;
 
+    private CompositeSubscription subscription = new CompositeSubscription();
+    private AddContactViewModel addContactViewModel;
+
     private static int CROP_IMAGE = 1;
     private static int ADD_IMAGE_FROM_GALLERY = 2;
     private static int ADD_IMAGE_FROM_CAMERA = 3;
@@ -73,7 +78,7 @@ public class AddContactActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         ButterKnife.inject(this);
-
+        addContactViewModel = new AddContactViewModel(new ApiInteractorImpl(), AndroidSchedulers.mainThread());
     }
 
     @Override
@@ -135,64 +140,47 @@ public class AddContactActivity extends AppCompatActivity {
     }
 
     public void saveData(String fName, String lName, String email, String phone, File image) {
-//        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl("http://gojek-contacts-app.herokuapp.com/")
-//                .addConverterFactory(GsonConverterFactory.create())//GsonConverter untuk parsing json
-//                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-//                .build();
-//        ApiServices service = retrofit.create(ApiServices.class);
-//        Observable<String> call = service.savePost(fName, lName, email, phone);
-//        call.subscribeOn(Schedulers.newThread())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Subscriber<String>() {
-//                    @Override
-//                    public final void onCompleted() {
-//                        // do nothing
-//                    }
-//
-//                    @Override
-//                    public final void onError(Throwable e) {
-//                        Log.e("GithubDemo", e.getMessage());
-//                    }
-//
-//                    @Override
-//                    public void onNext(String s) {
-//
-//                    }
-//
-//
-//                });
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://gojek-contacts-app.herokuapp.com/")
-                .addConverterFactory(GsonConverterFactory.create())//GsonConverter untuk parsing json
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        System.out.println("ISINYA APA SIH "+fName+" "+lName+" "+email+" "+phone);
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("contact[first_name]", fName);
-        params.put("contact[last_name]", lName);
-        params.put("contact[email]", email);
-        params.put("contact[phone_number]", phone);
-        params.put("contact[profile_pic]", image);
 
-        ApiServices apiService = retrofit.create(ApiServices.class);
-        Call<ResponseBody> result = apiService.postContact(params);
-        result.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    if (response.body() != null)
-                        Toast.makeText(AddContactActivity.this, " response message " + response.body().string(), Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        String messageResult = addContactViewModel.cekContactComponent(fName, lName, email, phone);
+        if (messageResult.equals("")) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("contact[first_name]", fName);
+            params.put("contact[last_name]", lName);
+            params.put("contact[email]", email);
+            params.put("contact[phone_number]", phone);
+//        params.put("contact[profile_pic]", image);
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+            subscription.add(addContactViewModel.postContact(params)
+                    .subscribe(new Observer<ContactPerson>() {
+                        @Override
+                        public void onCompleted() {
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            e.printStackTrace();
+                            Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "your input is invalid", Snackbar.LENGTH_LONG);
+                            snackbar.show();
+                        }
+
+                        @Override
+                        public void onNext(ContactPerson contactPerson) {
+                            try{
+                                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "input success", Snackbar.LENGTH_LONG);
+                                snackbar.show();
+                                finish();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+
+
+                    }));
+        } else {
+            Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), messageResult, Snackbar.LENGTH_LONG);
+            snackbar.show();
+        }
 
     }
 

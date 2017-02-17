@@ -2,6 +2,8 @@ package com.isas.contactapps;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+
+import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -10,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,11 +22,17 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.isas.contactapps.api.ApiInteractorImpl;
+import com.isas.contactapps.databinding.ActivityDetailContactBinding;
+import com.isas.contactapps.model.ContactPerson;
+import com.isas.contactapps.viewmodel.DetailContactViewModel;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import butterknife.OnLongClick;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class DetailContactActivity extends AppCompatActivity {
     @InjectView(R.id.iv_prof_pic_contact) ImageView ivPictureContact;
@@ -34,27 +43,60 @@ public class DetailContactActivity extends AppCompatActivity {
     @InjectView(R.id.layout_email_contact) LinearLayout layoutEmailContact;
     @InjectView(R.id.tv_email_contact) TextView tvEmailContact;
 
+    ActivityDetailContactBinding binding;
+    private CompositeSubscription subscription = new CompositeSubscription();
+    private DetailContactViewModel detailContactViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_contact);
-
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_detail_contact);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         ButterKnife.inject(this);
-        Glide.with(getApplicationContext())
-                .load("lala").asBitmap().centerCrop()
-                .placeholder(R.drawable.placeholder_people)
-                .error(R.drawable.placeholder_people)
-                .into(new BitmapImageViewTarget(ivPictureContact) {
-            @Override
-            protected void setResource(Bitmap resource) {
-                RoundedBitmapDrawable circularBitmapDrawable =
-                        RoundedBitmapDrawableFactory.create(getApplicationContext().getResources(), resource);
-                circularBitmapDrawable.setCircular(true);
-                ivPictureContact.setImageDrawable(circularBitmapDrawable);
-            }
-        });
+
+        String id = getIntent().getStringExtra("ID");
+        detailContactViewModel = new DetailContactViewModel(new ApiInteractorImpl(),AndroidSchedulers.mainThread());
+        getData(id);
+
+    }
+
+    public void getData(String id){
+        subscription.add(detailContactViewModel.getContact(id)
+                .subscribe(new Observer<ContactPerson>() {
+                    @Override public void onCompleted() {
+
+                    }
+
+                    @Override public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(ContactPerson contactPerson) {
+                        binding.setUser(contactPerson);
+                        Glide.with(getApplicationContext())
+                                .load(contactPerson.getProfilePic()).asBitmap().centerCrop()
+                                .placeholder(R.drawable.placeholder_people)
+                                .error(R.drawable.placeholder_people)
+                                .into(new BitmapImageViewTarget(ivPictureContact) {
+                                    @Override
+                                    protected void setResource(Bitmap resource) {
+                                        RoundedBitmapDrawable circularBitmapDrawable =
+                                                RoundedBitmapDrawableFactory.create(getApplicationContext().getResources(), resource);
+                                        circularBitmapDrawable.setCircular(true);
+                                        ivPictureContact.setImageDrawable(circularBitmapDrawable);
+                                    }
+                                });
+                    }
+
+                }));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
+        return true;
     }
 
     @Override
@@ -62,8 +104,14 @@ public class DetailContactActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
-                finish();
-                return true;
+                finish();break;
+            case R.id.action_share:
+                String shareBody =  tvNameContact.getText().toString()+" Phone : "+tvPhoneContact.getText().toString();
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Contact");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+                startActivity(Intent.createChooser(sharingIntent, "Share"));break;
 
         }
         return super.onOptionsItemSelected(item);

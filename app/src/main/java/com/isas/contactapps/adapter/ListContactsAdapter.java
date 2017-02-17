@@ -12,6 +12,8 @@ import com.bumptech.glide.Glide;
 import com.isas.contactapps.R;
 import com.isas.contactapps.model.ContactPerson;
 
+import java.util.ArrayList;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -20,10 +22,10 @@ import butterknife.InjectView;
  */
 
 public class ListContactsAdapter extends BaseAdapter {
-    ContactPerson [] contactPerson;
+    ArrayList<ContactPerson> contactPerson;
     static class ViewHolder {
-        @InjectView(R.id.iv_contact_list_alphabet)
-        ImageView ivAlphabet;
+        @InjectView(R.id.tv_contact_list_alphabet2)
+        TextView tvAlphabet;
         @InjectView(R.id.iv_contact_list_picture)
         ImageView ivPictureContact;
         @InjectView(R.id.tv_contact_list_name)
@@ -38,14 +40,14 @@ public class ListContactsAdapter extends BaseAdapter {
     Context mContext;
     int dummy;
 
-    public ListContactsAdapter(Context mContext, ContactPerson [] contactPerson) {
+    public ListContactsAdapter(Context mContext, ArrayList<ContactPerson> contactPerson) {
         this.mContext = mContext;
         this.contactPerson = contactPerson;
     }
 
     @Override
     public int getCount() {
-        return contactPerson.length;
+        return contactPerson.size();
     }
 
     @Override
@@ -65,14 +67,23 @@ public class ListContactsAdapter extends BaseAdapter {
         holder = new ViewHolder(view);
 
         Glide.with(mContext)
-                .load(contactPerson[position].getProfile_pic())
-                //placeholder berfungsi menampilkan gambar sebelum dimuat
+                .load(contactPerson.get(position).getProfilePic())
                 .placeholder(R.drawable.placeholder_people)
-                //error menampilkan gambar jika terjadi eror saat load gambar dari url
                 .error(R.drawable.placeholder_people)
                 .into(holder.ivPictureContact);
-        System.out.println("KOK NAMANYA "+contactPerson[position].getFirst_name());
-        holder.tvNameContact.setText(contactPerson[position].getFirst_name()+" "+contactPerson[position].getLast_name());
+        holder.tvNameContact.setText(contactPerson.get(position).getFullname());
+        if(position>0){
+            if(contactPerson.get(position).getFullname().charAt(0)!=contactPerson.get(position-1).getFullname().charAt(0)){
+                holder.tvAlphabet.setVisibility(View.VISIBLE);
+                holder.tvAlphabet.setText(""+Character.toUpperCase(contactPerson.get(position).getFullname().charAt(0)));
+            }else{
+                holder.tvAlphabet.setVisibility(View.INVISIBLE);
+            }
+        }else{
+            holder.tvAlphabet.setVisibility(View.VISIBLE);
+            holder.tvAlphabet.setText(""+Character.toUpperCase(contactPerson.get(position).getFullname().charAt(0)));
+        }
+
 
         return view;
     }
