@@ -59,7 +59,7 @@ public class AddContactActivity extends AppCompatActivity {
 
 
     public Uri mImageCaptureUri;
-    private File sendPhoto;
+    private File sendPhoto = null;
 
     private CompositeSubscription subscription = new CompositeSubscription();
     private AddContactViewModel addContactViewModel;
@@ -148,7 +148,7 @@ public class AddContactActivity extends AppCompatActivity {
             params.put("contact[last_name]", lName);
             params.put("contact[email]", email);
             params.put("contact[phone_number]", phone);
-//        params.put("contact[profile_pic]", image);
+//            params.put("contact[profile_pic]", image);
 
             subscription.add(addContactViewModel.postContact(params)
                     .subscribe(new Observer<ContactPerson>() {

@@ -2,18 +2,15 @@ package com.isas.contactapps.api;
 
 import com.isas.contactapps.model.ContactPerson;
 
-import org.json.JSONObject;
-
 import java.io.File;
 import java.util.HashMap;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import rx.Observable;
 
@@ -31,5 +28,13 @@ public interface ApiServices {
     @FormUrlEncoded
     @POST("/contacts.json")
     Observable<ContactPerson> postContact(@FieldMap HashMap<String, Object> params);
+
+    @Multipart
+    @POST("/contacts.json")
+    Observable<ContactPerson> postContactWithImage(@Part("contact[first_name]") String first_name,
+                                                   @Part("contact[last_name]") String last_name,
+                                                   @Part("contact[email]") String email,
+                                                   @Part("contact[phone_number]") String phone_number,
+                                                   @Part("contact[profile_pic]") File profile_picture);
 
 }

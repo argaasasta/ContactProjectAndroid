@@ -4,6 +4,7 @@ import com.isas.contactapps.model.ContactPerson;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 
 import okhttp3.ResponseBody;
@@ -49,5 +50,10 @@ public class ApiInteractorImpl implements ApiInteractor {
     @Override
     public Observable<ContactPerson> postContact(HashMap<String, Object> params) {
         return apiServices.postContact(params).subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public Observable<ContactPerson> postContactWithImage(String first_name, String last_name, String email, String phone_number, File profile_picture) {
+        return apiServices.postContactWithImage(first_name,last_name,email,phone_number,profile_picture).subscribeOn(Schedulers.io());
     }
 }

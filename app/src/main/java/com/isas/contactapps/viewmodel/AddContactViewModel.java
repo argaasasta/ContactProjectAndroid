@@ -5,6 +5,7 @@ import com.isas.contactapps.model.ContactPerson;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 
 import okhttp3.ResponseBody;
@@ -27,6 +28,10 @@ public class AddContactViewModel {
 
     public Observable<ContactPerson> postContact(HashMap<String, Object> params) {
         return interactor.postContact(params).observeOn(scheduler);
+    }
+
+    public Observable<ContactPerson> postContactWithPicture(String first_name, String last_name, String email, String phone_number, File profile_picture) {
+        return interactor.postContactWithImage(first_name,last_name,email,phone_number,profile_picture).observeOn(scheduler);
     }
 
     public String cekContactComponent(String fName, String lName, String email, String phoneNumber) {

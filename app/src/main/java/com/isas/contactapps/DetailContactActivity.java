@@ -111,7 +111,7 @@ public class DetailContactActivity extends AppCompatActivity {
                 sharingIntent.setType("text/plain");
                 sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Contact");
                 sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-                startActivity(Intent.createChooser(sharingIntent, "Share"));break;
+                startActivity(Intent.createChooser(sharingIntent, "Share Contact"));break;
 
         }
         return super.onOptionsItemSelected(item);
